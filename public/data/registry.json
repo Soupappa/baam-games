@@ -1,11 +1,31 @@
 {
-  "schemaVersion": 1,
-  "builtAt": "2026-10-02T00:00:00.000Z",
+  "meta": {
+    "schemaVersion": 1,
+    "territory": "games",
+    "sourceHash": "881f56c083b685095eec86ea7517089d4dd8f54eeebd689b0e027fd81fe2b370",
+    "compiledAt": "2026-10-02",
+    "count": 4,
+    "relationVocabulary": [
+      "uses",
+      "used-by",
+      "inspired-by",
+      "inspires",
+      "derived-from",
+      "has-derivative",
+      "part-of",
+      "has-part",
+      "related-to"
+    ]
+  },
   "territory": {
     "id": "games",
+    "name": "Games",
     "title": "BAAM.GAMES",
-    "summary": "Jeux, moteurs et règles qui refusent de rester tranquilles.",
-    "url": "https://games.baam.pro/"
+    "url": "https://games.baam.pro/",
+    "localUrl": "http://127.0.0.1:8090/",
+    "accent": "#ff4268",
+    "tagline": "Les règles bougent",
+    "description": "Jeux, moteurs et règles qui refusent de rester tranquilles. Des systèmes que l’on comprend en jouant contre eux."
   },
   "assets": [
     {
@@ -29,7 +49,7 @@
         "doctrine"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "fronts"
       },
       "presentation": {
@@ -40,10 +60,10 @@
         {
           "type": "related-to",
           "target": "doctrine-engine",
-          "inferred": true
+          "generated": true
         }
       ],
-      "sourceOrigin": "local"
+      "sourceOrigin": "file"
     },
     {
       "schemaVersion": 1,
@@ -51,7 +71,7 @@
       "title": "Doctrine Engine",
       "summary": "Deux intelligences artificielles inventent leurs unités, affrontent leurs doctrines et évoluent sous une même contrainte de budget.",
       "type": "game-engine",
-      "status": "prototype",
+      "status": "preview",
       "territories": [
         "games",
         "lab"
@@ -66,7 +86,7 @@
         "simulation"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "doctrine"
       },
       "presentation": {
@@ -79,7 +99,7 @@
           "target": "asymmetric-wars"
         }
       ],
-      "sourceOrigin": "local"
+      "sourceOrigin": "file"
     },
     {
       "schemaVersion": 1,
@@ -87,7 +107,7 @@
       "title": "Ninja Worms",
       "summary": "Un worms-like nerveux : dix secondes pour viser, bondir, lancer le grappin et faire exploser un terrain qui ne se remet jamais vraiment.",
       "type": "game",
-      "status": "prototype",
+      "status": "preview",
       "territories": [
         "games"
       ],
@@ -101,7 +121,7 @@
         "multijoueur"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "rope"
       },
       "presentation": {
@@ -114,7 +134,7 @@
           "target": "spider-vs-ants"
         }
       ],
-      "sourceOrigin": "local"
+      "sourceOrigin": "file"
     },
     {
       "schemaVersion": 1,
@@ -122,7 +142,7 @@
       "title": "Spider vs Ants",
       "summary": "Un jeu de plateau familial où dix espèces d'insectes se disputent le terrain, les ressources et le droit de ne pas finir dans la toile.",
       "type": "board-game",
-      "status": "prototype",
+      "status": "preview",
       "territories": [
         "games"
       ],
@@ -136,7 +156,7 @@
         "stratégie familiale"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "web"
       },
       "presentation": {
@@ -147,10 +167,10 @@
         {
           "type": "related-to",
           "target": "ninja-worms",
-          "inferred": true
+          "generated": true
         }
       ],
-      "sourceOrigin": "local"
+      "sourceOrigin": "file"
     }
   ]
 }

@@ -4,7 +4,7 @@
   "title": "Doctrine Engine",
   "summary": "Deux intelligences artificielles inventent leurs unités, affrontent leurs doctrines et évoluent sous une même contrainte de budget.",
   "type": "game-engine",
-  "status": "prototype",
+  "status": "preview",
   "territories": [
     "games",
     "lab"
@@ -19,7 +19,7 @@
     "simulation"
   ],
   "preview": {
-    "type": "generated",
+    "type": "none",
     "key": "doctrine"
   },
   "presentation": {

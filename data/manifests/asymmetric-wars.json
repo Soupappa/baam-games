@@ -19,7 +19,7 @@
     "doctrine"
   ],
   "preview": {
-    "type": "generated",
+    "type": "none",
     "key": "fronts"
   },
   "presentation": {

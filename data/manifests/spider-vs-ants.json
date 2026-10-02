@@ -4,7 +4,7 @@
   "title": "Spider vs Ants",
   "summary": "Un jeu de plateau familial où dix espèces d'insectes se disputent le terrain, les ressources et le droit de ne pas finir dans la toile.",
   "type": "board-game",
-  "status": "prototype",
+  "status": "preview",
   "territories": [
     "games"
   ],
@@ -18,7 +18,7 @@
     "stratégie familiale"
   ],
   "preview": {
-    "type": "generated",
+    "type": "none",
     "key": "web"
   },
   "presentation": {

@@ -21,7 +21,7 @@
         "doctrine"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "fronts"
       },
       "presentation": {
@@ -34,7 +34,7 @@
       "title": "Doctrine Engine",
       "summary": "Deux intelligences artificielles inventent leurs unités, affrontent leurs doctrines et évoluent sous une même contrainte de budget.",
       "type": "game-engine",
-      "status": "prototype",
+      "status": "preview",
       "territories": [
         "games",
         "lab"
@@ -49,7 +49,7 @@
         "simulation"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "doctrine"
       },
       "presentation": {
@@ -62,7 +62,7 @@
       "title": "Ninja Worms",
       "summary": "Un worms-like nerveux : dix secondes pour viser, bondir, lancer le grappin et faire exploser un terrain qui ne se remet jamais vraiment.",
       "type": "game",
-      "status": "prototype",
+      "status": "preview",
       "territories": [
         "games"
       ],
@@ -76,7 +76,7 @@
         "multijoueur"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "rope"
       },
       "presentation": {
@@ -89,7 +89,7 @@
       "title": "Spider vs Ants",
       "summary": "Un jeu de plateau familial où dix espèces d'insectes se disputent le terrain, les ressources et le droit de ne pas finir dans la toile.",
       "type": "board-game",
-      "status": "prototype",
+      "status": "preview",
       "territories": [
         "games"
       ],
@@ -103,7 +103,7 @@
         "stratégie familiale"
       ],
       "preview": {
-        "type": "generated",
+        "type": "none",
         "key": "web"
       },
       "presentation": {
@@ -117,25 +117,25 @@
       "source": "asymmetric-wars",
       "target": "doctrine-engine",
       "type": "related-to",
-      "inferred": true
+      "generated": true
     },
     {
       "source": "doctrine-engine",
       "target": "asymmetric-wars",
       "type": "related-to",
-      "inferred": false
+      "generated": false
     },
     {
       "source": "ninja-worms",
       "target": "spider-vs-ants",
       "type": "related-to",
-      "inferred": false
+      "generated": false
     },
     {
       "source": "spider-vs-ants",
       "target": "ninja-worms",
       "type": "related-to",
-      "inferred": true
+      "generated": true
     }
   ]
 }

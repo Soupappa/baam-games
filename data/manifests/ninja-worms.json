@@ -4,7 +4,7 @@
   "title": "Ninja Worms",
   "summary": "Un worms-like nerveux : dix secondes pour viser, bondir, lancer le grappin et faire exploser un terrain qui ne se remet jamais vraiment.",
   "type": "game",
-  "status": "prototype",
+  "status": "preview",
   "territories": [
     "games"
   ],
@@ -18,7 +18,7 @@
     "multijoueur"
   ],
   "preview": {
-    "type": "generated",
+    "type": "none",
     "key": "rope"
   },
   "presentation": {

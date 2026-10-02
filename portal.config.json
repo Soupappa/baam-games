@@ -2,9 +2,13 @@
   "schemaVersion": 1,
   "territory": {
     "id": "games",
+    "name": "Games",
     "title": "BAAM.GAMES",
-    "summary": "Jeux, moteurs et règles qui refusent de rester tranquilles.",
-    "url": "https://games.baam.pro/"
+    "url": "https://games.baam.pro/",
+    "localUrl": "http://127.0.0.1:8090/",
+    "accent": "#ff4268",
+    "tagline": "Les règles bougent",
+    "description": "Jeux, moteurs et règles qui refusent de rester tranquilles. Des systèmes que l’on comprend en jouant contre eux."
   },
   "featured": [
     "asymmetric-wars",

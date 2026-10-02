@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, "..");
@@ -68,7 +69,7 @@ async function loadSource(source) {
     try {
       const manifest = await load();
       validate(manifest, source.id);
-      return { manifest, origin };
+      return { manifest, origin: origin === "local" ? "file" : origin };
     } catch (error) {
       console.warn(`[${source.id}] ${origin} indisponible : ${error.message}`);
     }
@@ -103,7 +104,7 @@ for (const item of loaded) {
   for (const relation of item.relations) {
     const target = byId.get(relation.target);
     if (!target) throw new Error(`${item.id} pointe vers une cible absente : ${relation.target}`);
-    const inverse = { type: relationVocabulary[relation.type], target: item.id, inferred: true };
+    const inverse = { type: relationVocabulary[relation.type], target: item.id, generated: true };
     target.relations = uniqueRelations([...(target.relations || []), inverse]);
   }
 }
@@ -116,9 +117,18 @@ const latestContentDate = loaded
   .sort()
   .at(-1) || "1970-01-01";
 const builtAt = process.env.BAAM_BUILD_TIME || `${latestContentDate}T00:00:00.000Z`;
+const sourceHash = createHash("sha256")
+  .update(JSON.stringify({ territory: config.territory, assets: loaded }))
+  .digest("hex");
 const registry = {
-  schemaVersion: 1,
-  builtAt,
+  meta: {
+    schemaVersion: 1,
+    territory: "games",
+    sourceHash,
+    compiledAt: latestContentDate,
+    count: loaded.length,
+    relationVocabulary: Object.keys(relationVocabulary)
+  },
   territory: config.territory,
   assets: loaded
 };
@@ -133,7 +143,7 @@ const graph = {
     source: item.id,
     target: relation.target,
     type: relation.type,
-    inferred: Boolean(relation.inferred)
+    generated: Boolean(relation.generated)
   })))
 };
 
@@ -162,7 +172,7 @@ const portalManifest = {
   schemaVersion: 1,
   id: "baam-games",
   title: "BAAM.GAMES",
-  summary: config.territory.summary,
+  summary: config.territory.description,
   type: "territory",
   status: "public",
   territories: ["games"],

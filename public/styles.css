@@ -103,6 +103,8 @@ button { color: inherit; }
 }
 
 .control--gravity:hover, .control--gravity:focus-visible { background: var(--acid); }
+.control--sound:hover, .control--sound:focus-visible { background: #00dfe9; }
+.control--sound[aria-pressed="false"] strong { opacity: 0.38; }
 .control--seed { min-width: 112px; background: var(--red); color: var(--ink); }
 
 .game-stage {

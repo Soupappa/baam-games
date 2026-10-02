@@ -2,6 +2,8 @@
 
 Portail territorial des jeux BAAM. L'interface est un plateau physique : les cartes
 tombent, se heurtent, s'accrochent et recomposent le tas lorsqu'un jeu s'ouvre.
+Leur centre de gravité les ramène face lisible, puis la simulation les met réellement
+au repos. Les sons d'ouverture et de fermeture sont synthétisés côté navigateur.
 
 ## Lancer
 

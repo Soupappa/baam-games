@@ -7,6 +7,8 @@ const seedControl = document.querySelector("#seed-control");
 const seedValue = document.querySelector("#seed-value");
 const gravityControl = document.querySelector("#gravity-control");
 const gravityValue = document.querySelector("#gravity-value");
+const soundControl = document.querySelector("#sound-control");
+const soundValue = document.querySelector("#sound-value");
 const buildStatus = document.querySelector("#build-status");
 const gameCounter = document.querySelector("#game-counter");
 
@@ -36,6 +38,8 @@ let arenaWidth = 1;
 let arenaHeight = 1;
 let random = Math.random;
 let currentSeed = getInitialSeed();
+let audioContext = null;
+let soundEnabled = localStorage.getItem("baam-games-sound") !== "off";
 
 function getInitialSeed() {
   const fromUrl = Number(new URLSearchParams(location.search).get("seed"));
@@ -56,6 +60,10 @@ function mulberry32(seed) {
 
 function rand(min, max) {
   return min + random() * (max - min);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 function cardSize(index, open = false) {
@@ -136,6 +144,9 @@ function createBody(item, index) {
     open: false,
     dragging: false,
     sleeping: false,
+    supported: false,
+    restTime: 0,
+    entered: false,
     visualSeed: Math.floor(random() * 100000),
     lastImpact: 0
   };
@@ -147,6 +158,62 @@ function createBody(item, index) {
 
 function updateMass(body) {
   body.mass = Math.max(0.8, (body.w * body.h) / 56000);
+}
+
+function wake(body, impulse = 0) {
+  body.sleeping = false;
+  body.restTime = 0;
+  if (impulse) body.vy -= impulse;
+}
+
+function getAudioContext() {
+  if (!audioContext) {
+    const Context = window.AudioContext || window.webkitAudioContext;
+    if (!Context) return null;
+    audioContext = new Context();
+  }
+  if (audioContext.state === "suspended") audioContext.resume();
+  return audioContext;
+}
+
+function playCardSound(opening) {
+  if (!soundEnabled) return;
+  const context = getAudioContext();
+  if (!context) return;
+  const now = context.currentTime;
+  const master = context.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(opening ? 0.075 : 0.09, now + 0.008);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + (opening ? 0.22 : 0.14));
+  master.connect(context.destination);
+
+  const tone = context.createOscillator();
+  tone.type = opening ? "triangle" : "square";
+  tone.frequency.setValueAtTime(opening ? 115 : 215, now);
+  tone.frequency.exponentialRampToValueAtTime(opening ? 245 : 82, now + (opening ? 0.2 : 0.11));
+  const toneGain = context.createGain();
+  toneGain.gain.setValueAtTime(0.7, now);
+  toneGain.gain.exponentialRampToValueAtTime(0.03, now + (opening ? 0.2 : 0.11));
+  tone.connect(toneGain).connect(master);
+  tone.start(now);
+  tone.stop(now + 0.23);
+
+  const noiseLength = Math.floor(context.sampleRate * 0.055);
+  const noiseBuffer = context.createBuffer(1, noiseLength, context.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let index = 0; index < noiseLength; index += 1) {
+    data[index] = (Math.random() * 2 - 1) * (1 - index / noiseLength);
+  }
+  const noise = context.createBufferSource();
+  noise.buffer = noiseBuffer;
+  const filter = context.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = opening ? 820 : 460;
+  filter.Q.value = 1.4;
+  const noiseGain = context.createGain();
+  noiseGain.gain.value = opening ? 0.34 : 0.48;
+  noise.connect(filter).connect(noiseGain).connect(master);
+  noise.start(now + (opening ? 0.025 : 0));
 }
 
 function bindCard(body) {
@@ -182,7 +249,7 @@ function bindCard(body) {
       moved: false
     };
     body.dragging = true;
-    body.sleeping = false;
+    wake(body);
     body.vx = 0;
     body.vy = 0;
     body.node.classList.add("is-dragging");
@@ -230,6 +297,7 @@ function arenaPoint(event) {
 
 function toggleCard(body, force) {
   body.open = force ?? !body.open;
+  playCardSound(body.open);
   const size = cardSize(body.index, body.open);
   body.targetW = size.width;
   body.targetH = size.height;
@@ -240,7 +308,7 @@ function toggleCard(body, force) {
   body.vy -= body.open ? 430 : 160;
   body.vx += rand(-90, 90);
   body.av += rand(-0.32, 0.32);
-  body.sleeping = false;
+  wake(body);
   links = links.filter((link) => link.a !== body && link.b !== body);
   if (reducedMotion) layoutReduced();
 }
@@ -260,30 +328,31 @@ function solveBounds(body) {
   const right = arenaWidth - 10 - extents.x;
   const ceiling = 5 + extents.y;
   const floor = arenaHeight - 44 - extents.y;
-  const restitution = 0.24;
+  const wallRestitution = 0.16;
 
   if (body.x < left) {
     body.x = left;
-    if (body.vx < 0) body.vx *= -restitution;
-    body.av += Math.abs(body.vy) * 0.00014;
+    if (body.vx < 0) body.vx *= -wallRestitution;
+    body.av += Math.abs(body.vy) * 0.00005;
     impact(body.x - extents.x, body.y, body, Math.abs(body.vx));
   } else if (body.x > right) {
     body.x = right;
-    if (body.vx > 0) body.vx *= -restitution;
-    body.av -= Math.abs(body.vy) * 0.00014;
+    if (body.vx > 0) body.vx *= -wallRestitution;
+    body.av -= Math.abs(body.vy) * 0.00005;
     impact(body.x + extents.x, body.y, body, Math.abs(body.vx));
   }
 
   if (body.y > floor) {
     const speed = Math.abs(body.vy);
+    const floorRestitution = speed > 420 ? 0.19 : speed > 180 ? 0.11 : 0;
     body.y = floor;
-    if (body.vy > 0) body.vy *= speed < 65 ? 0 : -restitution;
-    body.vx *= 0.91;
-    body.av *= 0.74;
-    body.av += body.vx * 0.000012;
+    body.supported = true;
+    if (body.vy > 0) body.vy *= -floorRestitution;
+    body.vx *= 0.82;
+    body.av *= 0.52;
     impact(body.x, body.y + extents.y, body, speed);
   }
-  if (body.y > 0 && body.y < ceiling) {
+  if (body.entered && body.y < ceiling) {
     body.y = ceiling;
     if (body.vy < 0) body.vy *= -0.18;
   }
@@ -299,9 +368,6 @@ function solvePair(a, b) {
   const overlapY = ea.y + eb.y - Math.abs(dy);
   if (overlapX <= 0 || overlapY <= 0) return;
 
-  const invA = a.dragging ? 0 : 1 / a.mass;
-  const invB = b.dragging ? 0 : 1 / b.mass;
-  const invTotal = invA + invB || 1;
   let nx = 0;
   let ny = 0;
   let overlap = 0;
@@ -314,15 +380,28 @@ function solvePair(a, b) {
     overlap = overlapX;
   }
 
+  if (ny > 0) a.supported = true;
+  if (ny < 0) b.supported = true;
+
+  const relative = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+  if (Math.abs(relative) > 90) {
+    if (a.sleeping) wake(a);
+    if (b.sleeping) wake(b);
+  }
+  const invA = a.dragging || a.sleeping ? 0 : 1 / a.mass;
+  const invB = b.dragging || b.sleeping ? 0 : 1 / b.mass;
+  const invTotal = invA + invB;
+  if (!invTotal) return;
+
   const correction = Math.max(0, overlap - 0.8) * 0.76;
   a.x -= nx * correction * invA / invTotal;
   a.y -= ny * correction * invA / invTotal;
   b.x += nx * correction * invB / invTotal;
   b.y += ny * correction * invB / invTotal;
 
-  const relative = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
   if (relative < 0) {
-    const impulseValue = -(1 + 0.18) * relative / invTotal;
+    const restitution = Math.abs(relative) > 280 ? 0.2 : Math.abs(relative) > 120 ? 0.1 : 0.03;
+    const impulseValue = -(1 + restitution) * relative / invTotal;
     const ix = impulseValue * nx;
     const iy = impulseValue * ny;
     a.vx -= ix * invA;
@@ -330,16 +409,15 @@ function solvePair(a, b) {
     b.vx += ix * invB;
     b.vy += iy * invB;
 
-    const tangentSpeed = (b.vx - a.vx) * -ny + (b.vy - a.vy) * nx;
-    const friction = tangentSpeed * 0.035;
-    a.vx -= -ny * friction * invA;
-    a.vy -= nx * friction * invA;
-    b.vx += -ny * friction * invB;
-    b.vy += nx * friction * invB;
-
-    const torque = ((dx * ny - dy * nx) / Math.max(100, a.w + b.w)) * Math.min(2.2, Math.abs(relative) * 0.003);
-    a.av -= torque / a.mass;
-    b.av += torque / b.mass;
+    const tx = -ny;
+    const ty = nx;
+    const tangentSpeed = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty;
+    const frictionLimit = Math.abs(impulseValue) * 0.22;
+    const frictionImpulse = clamp(-tangentSpeed / invTotal, -frictionLimit, frictionLimit);
+    a.vx -= tx * frictionImpulse * invA;
+    a.vy -= ty * frictionImpulse * invA;
+    b.vx += tx * frictionImpulse * invB;
+    b.vy += ty * frictionImpulse * invB;
     if (Math.abs(relative) > 105) impact((a.x + b.x) / 2, (a.y + b.y) / 2, a, Math.abs(relative));
   }
 
@@ -360,11 +438,11 @@ function applyLinks(dt, time) {
     const force = stretch * 10 * pulse;
     const nx = dx / distance;
     const ny = dy / distance;
-    if (!link.a.dragging) {
+    if (!link.a.dragging && !link.a.sleeping) {
       link.a.vx += nx * force / link.a.mass * dt;
       link.a.vy += ny * force / link.a.mass * dt;
     }
-    if (!link.b.dragging) {
+    if (!link.b.dragging && !link.b.sleeping) {
       link.b.vx -= nx * force / link.b.mass * dt;
       link.b.vy -= ny * force / link.b.mass * dt;
     }
@@ -394,25 +472,29 @@ function updatePhysics(dt, time) {
   const steps = 3;
   const step = Math.min(dt, 0.04) / steps;
   for (let pass = 0; pass < steps; pass += 1) {
+    for (const body of bodies) body.supported = false;
     applyLinks(step, time);
     for (const body of bodies) {
       body.w += (body.targetW - body.w) * Math.min(1, step * 10);
       body.h += (body.targetH - body.h) * Math.min(1, step * 10);
       updateMass(body);
-      if (!body.dragging) {
+      if (!body.dragging && !body.sleeping) {
         body.vx += pointerGravity * step;
         body.vy += 1180 * gravityLevels[gravityLevel] * step;
-        if (body.open) {
-          const uprightError = Math.atan2(Math.sin(body.angle), Math.cos(body.angle));
-          body.av += -uprightError * 7.5 * step;
-          body.av *= 0.94;
-        }
+        const ballastStrength = body.open ? 9.5 : 6.8;
+        const ballastError = Math.atan2(Math.sin(body.angle), Math.cos(body.angle));
+        body.av += -ballastError * ballastStrength * step;
         body.x += body.vx * step;
         body.y += body.vy * step;
         body.angle += body.av * step;
-        body.vx *= 0.998;
+        body.angle = Math.atan2(Math.sin(body.angle), Math.cos(body.angle));
+        if (body.y > 0) body.entered = true;
+        body.vx *= 0.994;
         body.vy *= 0.999;
-        body.av *= 0.995;
+        body.av *= body.open ? 0.965 : 0.978;
+        body.vx = clamp(body.vx, -1600, 1600);
+        body.vy = clamp(body.vy, -1600, 1600);
+        body.av = clamp(body.av, -7, 7);
       }
       solveBounds(body);
     }
@@ -421,6 +503,31 @@ function updatePhysics(dt, time) {
         for (let j = i + 1; j < bodies.length; j += 1) solvePair(bodies[i], bodies[j]);
       }
       for (const body of bodies) solveBounds(body);
+    }
+  }
+
+  for (const body of bodies) {
+    if (body.dragging || body.sleeping) continue;
+    const speed = Math.hypot(body.vx, body.vy);
+    const uprightError = Math.abs(Math.atan2(Math.sin(body.angle), Math.cos(body.angle)));
+    const settled = body.supported && speed < 16 && Math.abs(body.av) < 0.07 && uprightError < 0.045;
+    if (settled) {
+      body.restTime += dt;
+      body.vx *= 0.72;
+      body.vy *= 0.5;
+      body.av *= 0.58;
+      body.angle *= Math.max(0, 1 - dt * 6);
+      if (body.restTime > 0.58) {
+        body.sleeping = true;
+        body.x = Math.round(body.x * 2) / 2;
+        body.y = Math.round(body.y * 2) / 2;
+        body.angle = 0;
+        body.vx = 0;
+        body.vy = 0;
+        body.av = 0;
+      }
+    } else {
+      body.restTime = 0;
     }
   }
 }
@@ -629,6 +736,10 @@ function reset(seed = currentSeed) {
     body.vy = rand(0, 42);
     body.angle = rand(-0.22, 0.22);
     body.av = rand(-0.5, 0.5);
+    body.sleeping = false;
+    body.supported = false;
+    body.restTime = 0;
+    body.entered = false;
     body.visualSeed = Math.floor(random() * 100000);
   });
   if (reducedMotion) layoutReduced();
@@ -676,7 +787,20 @@ arena.addEventListener("pointerleave", () => {
 gravityControl.addEventListener("click", () => {
   gravityLevel = (gravityLevel + 1) % gravityLevels.length;
   gravityValue.textContent = gravityLevels[gravityLevel].toFixed(2).replace(/0$/, "");
-  for (const body of bodies) body.vy -= 75;
+  for (const body of bodies) wake(body, 75);
+});
+
+function renderSoundControl() {
+  soundControl.setAttribute("aria-pressed", String(soundEnabled));
+  soundControl.setAttribute("aria-label", soundEnabled ? "Couper les sons" : "Activer les sons");
+  soundValue.textContent = soundEnabled ? "ON" : "OFF";
+}
+
+soundControl.addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem("baam-games-sound", soundEnabled ? "on" : "off");
+  renderSoundControl();
+  if (soundEnabled) playCardSound(true);
 });
 
 seedControl.addEventListener("click", () => {
@@ -686,6 +810,7 @@ seedControl.addEventListener("click", () => {
 });
 
 window.addEventListener("resize", resize);
+renderSoundControl();
 
 async function boot() {
   resize();

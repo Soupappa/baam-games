@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "baam-games",
+  "title": "BAAM.GAMES",
+  "summary": "Jeux, moteurs et règles qui refusent de rester tranquilles.",
+  "type": "territory",
+  "status": "public",
+  "territories": [
+    "games"
+  ],
+  "url": "https://games.baam.pro/",
+  "updatedAt": "2026-10-02",
+  "tags": [
+    "games",
+    "portal",
+    "physics"
+  ],
+  "relations": [
+    {
+      "type": "has-part",
+      "target": "asymmetric-wars"
+    },
+    {
+      "type": "has-part",
+      "target": "doctrine-engine"
+    },
+    {
+      "type": "has-part",
+      "target": "ninja-worms"
+    },
+    {
+      "type": "has-part",
+      "target": "spider-vs-ants"
+    }
+  ]
+}

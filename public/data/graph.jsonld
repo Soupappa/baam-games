@@ -1,0 +1,101 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "baam": "https://baam.pro/ns#",
+    "relationType": "baam:relationType"
+  },
+  "@graph": [
+    {
+      "@id": "https://games.baam.pro/#asymmetric-wars",
+      "@type": "SoftwareApplication",
+      "name": "Asymmetric Wars",
+      "description": "Une guerre en temps réel entre une coalition technologiquement supérieure et un régime lent, résilient, impossible à lire avec les mêmes règles.",
+      "dateModified": "2026-10-02",
+      "keywords": [
+        "stratégie",
+        "asymétrie",
+        "temps réel",
+        "doctrine"
+      ],
+      "isPartOf": {
+        "@id": "https://games.baam.pro/",
+        "name": "BAAM.GAMES"
+      },
+      "baam:relations": [
+        {
+          "@id": "https://games.baam.pro/#doctrine-engine",
+          "relationType": "related-to"
+        }
+      ]
+    },
+    {
+      "@id": "https://games.baam.pro/#doctrine-engine",
+      "@type": "SoftwareApplication",
+      "name": "Doctrine Engine",
+      "description": "Deux intelligences artificielles inventent leurs unités, affrontent leurs doctrines et évoluent sous une même contrainte de budget.",
+      "dateModified": "2026-10-02",
+      "keywords": [
+        "IA",
+        "évolution",
+        "tactique",
+        "simulation"
+      ],
+      "isPartOf": {
+        "@id": "https://games.baam.pro/",
+        "name": "BAAM.GAMES"
+      },
+      "baam:relations": [
+        {
+          "@id": "https://games.baam.pro/#asymmetric-wars",
+          "relationType": "related-to"
+        }
+      ]
+    },
+    {
+      "@id": "https://games.baam.pro/#ninja-worms",
+      "@type": "SoftwareApplication",
+      "name": "Ninja Worms",
+      "description": "Un worms-like nerveux : dix secondes pour viser, bondir, lancer le grappin et faire exploser un terrain qui ne se remet jamais vraiment.",
+      "dateModified": "2026-10-02",
+      "keywords": [
+        "arcade",
+        "grappin",
+        "terrain destructible",
+        "multijoueur"
+      ],
+      "isPartOf": {
+        "@id": "https://games.baam.pro/",
+        "name": "BAAM.GAMES"
+      },
+      "baam:relations": [
+        {
+          "@id": "https://games.baam.pro/#spider-vs-ants",
+          "relationType": "related-to"
+        }
+      ]
+    },
+    {
+      "@id": "https://games.baam.pro/#spider-vs-ants",
+      "@type": "Game",
+      "name": "Spider vs Ants",
+      "description": "Un jeu de plateau familial où dix espèces d'insectes se disputent le terrain, les ressources et le droit de ne pas finir dans la toile.",
+      "dateModified": "2026-10-02",
+      "keywords": [
+        "plateau",
+        "insectes",
+        "2–4 joueurs",
+        "stratégie familiale"
+      ],
+      "isPartOf": {
+        "@id": "https://games.baam.pro/",
+        "name": "BAAM.GAMES"
+      },
+      "baam:relations": [
+        {
+          "@id": "https://games.baam.pro/#ninja-worms",
+          "relationType": "related-to"
+        }
+      ]
+    }
+  ]
+}

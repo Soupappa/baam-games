@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="BAAM.GAMES — jeux, moteurs et règles qui refusent de rester tranquilles.">
+  <title>BAAM.GAMES</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="https://baam.pro/" aria-label="Retour à BAAM point pro">
+      <span class="brand-baam">BAAM</span><span class="brand-dot">.</span><span>GAMES</span>
+    </a>
+    <div class="topbar-controls">
+      <span class="counter" id="game-counter">04 OBJETS JOUABLES</span>
+      <button class="control control--gravity" id="gravity-control" type="button" aria-label="Changer la gravité">
+        <span>G</span><strong id="gravity-value">1.0</strong>
+      </button>
+      <button class="control control--seed" id="seed-control" type="button">
+        <span>REJOUER</span><strong id="seed-value">0000</strong>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="game-stage" id="games" aria-labelledby="stage-title">
+      <div class="stage-grid" aria-hidden="true"></div>
+      <div class="masthead" aria-hidden="true">
+        <span>PLAY</span><span>THE</span><span>SYSTEM</span>
+      </div>
+      <div class="stage-copy">
+        <p class="eyebrow">BAAM / TERRITOIRE 06</p>
+        <h1 id="stage-title">LES RÈGLES<br><em>BOUGENT.</em></h1>
+        <p class="stage-intro">Attrape une carte. Ouvre-la. Le reste doit se débrouiller.</p>
+      </div>
+
+      <div class="arena" id="physics-arena">
+        <canvas class="arena-canvas" id="arena-canvas" aria-hidden="true"></canvas>
+        <div class="card-layer" id="card-layer"></div>
+        <div class="drop-marker" aria-hidden="true"><span>DROP ZONE</span></div>
+        <div class="floor-label" aria-hidden="true">
+          <span>DRAG</span><span>CLICK</span><span>DROP</span><span>REPEAT</span>
+        </div>
+      </div>
+
+      <div class="stage-status">
+        <span class="live-dot"></span>
+        <span id="build-status">CHARGEMENT DU REGISTRE</span>
+      </div>
+    </section>
+  </main>
+
+  <template id="game-card-template">
+    <article class="game-card" tabindex="0" role="button" aria-expanded="false">
+      <canvas class="card-sim" aria-hidden="true"></canvas>
+      <div class="card-wash" aria-hidden="true"></div>
+      <header class="card-head">
+        <span class="card-index"></span>
+        <span class="card-status"></span>
+      </header>
+      <div class="card-core">
+        <p class="card-type"></p>
+        <h2 class="card-title"></h2>
+        <p class="card-summary"></p>
+      </div>
+      <div class="card-details">
+        <div class="card-tags"></div>
+        <div class="card-links"></div>
+      </div>
+      <span class="card-corner card-corner--tl" aria-hidden="true"></span>
+      <span class="card-corner card-corner--br" aria-hidden="true"></span>
+      <button class="card-close" type="button" aria-label="Refermer">×</button>
+    </article>
+  </template>
+
+  <noscript>Ce portail a besoin de JavaScript pour faire tomber les jeux.</noscript>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
+

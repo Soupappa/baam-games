@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "territory": {
+    "id": "games",
+    "title": "BAAM.GAMES",
+    "summary": "Jeux, moteurs et règles qui refusent de rester tranquilles.",
+    "url": "https://games.baam.pro/"
+  },
+  "featured": [
+    "asymmetric-wars",
+    "doctrine-engine",
+    "ninja-worms",
+    "spider-vs-ants"
+  ],
+  "sources": [
+    {
+      "id": "asymmetric-wars",
+      "file": "../asymmetric-war/baam.json",
+      "url": "https://asym.games.baam.pro/.well-known/baam.json",
+      "cache": "data/manifests/asymmetric-wars.json"
+    },
+    {
+      "id": "doctrine-engine",
+      "file": "../Doctrine Engine/baam.json",
+      "url": "https://doctrine.games.baam.pro/.well-known/baam.json",
+      "cache": "data/manifests/doctrine-engine.json"
+    },
+    {
+      "id": "ninja-worms",
+      "file": "../NinjaWorms/baam.json",
+      "url": "https://ninja-worms.games.baam.pro/.well-known/baam.json",
+      "cache": "data/manifests/ninja-worms.json"
+    },
+    {
+      "id": "spider-vs-ants",
+      "file": "../SpiderVsAnts/baam.json",
+      "url": "https://spider-vs-ants.games.baam.pro/.well-known/baam.json",
+      "cache": "data/manifests/spider-vs-ants.json"
+    }
+  ]
+}
+

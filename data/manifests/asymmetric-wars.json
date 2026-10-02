@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "asymmetric-wars",
+  "title": "Asymmetric Wars",
+  "summary": "Une guerre en temps réel entre une coalition technologiquement supérieure et un régime lent, résilient, impossible à lire avec les mêmes règles.",
+  "type": "game",
+  "status": "preview",
+  "territories": [
+    "games"
+  ],
+  "url": null,
+  "localUrl": "http://127.0.0.1:8083/",
+  "repository": "https://github.com/Soupappa/asymmetric-war",
+  "updatedAt": "2026-10-02",
+  "tags": [
+    "stratégie",
+    "asymétrie",
+    "temps réel",
+    "doctrine"
+  ],
+  "preview": {
+    "type": "generated",
+    "key": "fronts"
+  },
+  "presentation": {
+    "accent": "#ff5038",
+    "index": "01"
+  },
+  "relations": []
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "ninja-worms",
+  "title": "Ninja Worms",
+  "summary": "Un worms-like nerveux : dix secondes pour viser, bondir, lancer le grappin et faire exploser un terrain qui ne se remet jamais vraiment.",
+  "type": "game",
+  "status": "prototype",
+  "territories": [
+    "games"
+  ],
+  "url": null,
+  "repository": "https://github.com/Soupappa/NinjaWorms",
+  "updatedAt": "2026-10-02",
+  "tags": [
+    "arcade",
+    "grappin",
+    "terrain destructible",
+    "multijoueur"
+  ],
+  "preview": {
+    "type": "generated",
+    "key": "rope"
+  },
+  "presentation": {
+    "accent": "#00e9ff",
+    "index": "03"
+  },
+  "relations": [
+    {
+      "type": "related-to",
+      "target": "spider-vs-ants"
+    }
+  ]
+}

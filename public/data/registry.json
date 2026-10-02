@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "builtAt": "2026-10-02T00:00:00.000Z",
+  "territory": {
+    "id": "games",
+    "title": "BAAM.GAMES",
+    "summary": "Jeux, moteurs et règles qui refusent de rester tranquilles.",
+    "url": "https://games.baam.pro/"
+  },
+  "assets": [
+    {
+      "schemaVersion": 1,
+      "id": "asymmetric-wars",
+      "title": "Asymmetric Wars",
+      "summary": "Une guerre en temps réel entre une coalition technologiquement supérieure et un régime lent, résilient, impossible à lire avec les mêmes règles.",
+      "type": "game",
+      "status": "preview",
+      "territories": [
+        "games"
+      ],
+      "url": null,
+      "localUrl": "http://127.0.0.1:8083/",
+      "repository": "https://github.com/Soupappa/asymmetric-war",
+      "updatedAt": "2026-10-02",
+      "tags": [
+        "stratégie",
+        "asymétrie",
+        "temps réel",
+        "doctrine"
+      ],
+      "preview": {
+        "type": "generated",
+        "key": "fronts"
+      },
+      "presentation": {
+        "accent": "#ff5038",
+        "index": "01"
+      },
+      "relations": [
+        {
+          "type": "related-to",
+          "target": "doctrine-engine",
+          "inferred": true
+        }
+      ],
+      "sourceOrigin": "local"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "doctrine-engine",
+      "title": "Doctrine Engine",
+      "summary": "Deux intelligences artificielles inventent leurs unités, affrontent leurs doctrines et évoluent sous une même contrainte de budget.",
+      "type": "game-engine",
+      "status": "prototype",
+      "territories": [
+        "games",
+        "lab"
+      ],
+      "url": null,
+      "repository": null,
+      "updatedAt": "2026-10-02",
+      "tags": [
+        "IA",
+        "évolution",
+        "tactique",
+        "simulation"
+      ],
+      "preview": {
+        "type": "generated",
+        "key": "doctrine"
+      },
+      "presentation": {
+        "accent": "#dfff00",
+        "index": "02"
+      },
+      "relations": [
+        {
+          "type": "related-to",
+          "target": "asymmetric-wars"
+        }
+      ],
+      "sourceOrigin": "local"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "ninja-worms",
+      "title": "Ninja Worms",
+      "summary": "Un worms-like nerveux : dix secondes pour viser, bondir, lancer le grappin et faire exploser un terrain qui ne se remet jamais vraiment.",
+      "type": "game",
+      "status": "prototype",
+      "territories": [
+        "games"
+      ],
+      "url": null,
+      "repository": "https://github.com/Soupappa/NinjaWorms",
+      "updatedAt": "2026-10-02",
+      "tags": [
+        "arcade",
+        "grappin",
+        "terrain destructible",
+        "multijoueur"
+      ],
+      "preview": {
+        "type": "generated",
+        "key": "rope"
+      },
+      "presentation": {
+        "accent": "#00e9ff",
+        "index": "03"
+      },
+      "relations": [
+        {
+          "type": "related-to",
+          "target": "spider-vs-ants"
+        }
+      ],
+      "sourceOrigin": "local"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "spider-vs-ants",
+      "title": "Spider vs Ants",
+      "summary": "Un jeu de plateau familial où dix espèces d'insectes se disputent le terrain, les ressources et le droit de ne pas finir dans la toile.",
+      "type": "board-game",
+      "status": "prototype",
+      "territories": [
+        "games"
+      ],
+      "url": null,
+      "repository": "https://github.com/Soupappa/SpiderVsAnts",
+      "updatedAt": "2026-10-02",
+      "tags": [
+        "plateau",
+        "insectes",
+        "2–4 joueurs",
+        "stratégie familiale"
+      ],
+      "preview": {
+        "type": "generated",
+        "key": "web"
+      },
+      "presentation": {
+        "accent": "#b970ff",
+        "index": "04"
+      },
+      "relations": [
+        {
+          "type": "related-to",
+          "target": "ninja-worms",
+          "inferred": true
+        }
+      ],
+      "sourceOrigin": "local"
+    }
+  ]
+}

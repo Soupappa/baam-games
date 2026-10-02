@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "doctrine-engine",
+  "title": "Doctrine Engine",
+  "summary": "Deux intelligences artificielles inventent leurs unités, affrontent leurs doctrines et évoluent sous une même contrainte de budget.",
+  "type": "game-engine",
+  "status": "prototype",
+  "territories": [
+    "games",
+    "lab"
+  ],
+  "url": null,
+  "repository": null,
+  "updatedAt": "2026-10-02",
+  "tags": [
+    "IA",
+    "évolution",
+    "tactique",
+    "simulation"
+  ],
+  "preview": {
+    "type": "generated",
+    "key": "doctrine"
+  },
+  "presentation": {
+    "accent": "#dfff00",
+    "index": "02"
+  },
+  "relations": [
+    {
+      "type": "related-to",
+      "target": "asymmetric-wars"
+    }
+  ]
+}

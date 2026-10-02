@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "spider-vs-ants",
+  "title": "Spider vs Ants",
+  "summary": "Un jeu de plateau familial où dix espèces d'insectes se disputent le terrain, les ressources et le droit de ne pas finir dans la toile.",
+  "type": "board-game",
+  "status": "prototype",
+  "territories": [
+    "games"
+  ],
+  "url": null,
+  "repository": "https://github.com/Soupappa/SpiderVsAnts",
+  "updatedAt": "2026-10-02",
+  "tags": [
+    "plateau",
+    "insectes",
+    "2–4 joueurs",
+    "stratégie familiale"
+  ],
+  "preview": {
+    "type": "generated",
+    "key": "web"
+  },
+  "presentation": {
+    "accent": "#b970ff",
+    "index": "04"
+  },
+  "relations": []
+}

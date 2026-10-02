@@ -9,10 +9,14 @@ const gravityControl = document.querySelector("#gravity-control");
 const gravityValue = document.querySelector("#gravity-value");
 const soundControl = document.querySelector("#sound-control");
 const soundValue = document.querySelector("#sound-value");
+const motionControl = document.querySelector("#motion-control");
+const motionLabel = document.querySelector("#motion-label");
+const motionValue = document.querySelector("#motion-value");
+const speedMeter = document.querySelector("#speed-meter");
+const speedValue = document.querySelector("#speed-value");
+const speedFill = document.querySelector("#speed-fill");
 const buildStatus = document.querySelector("#build-status");
-const gameCounter = document.querySelector("#game-counter");
-const stageGrid = document.querySelector(".stage-grid");
-const dropMarker = document.querySelector(".drop-marker");
+const worldLayer = document.querySelector("#world-layer");
 
 const typeLabels = {
   "game": "Jeu numérique",
@@ -28,15 +32,17 @@ const statusLabels = {
 };
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const gravityLevels = [0.65, 1, 1.4];
-let gravityLevel = 1;
+const gravityLevels = [0.2, 0.65, 1, 1.8, 3.2];
+let gravityLevel = 2;
 let pointerGravity = 0;
 let gravityVectorX = 0;
 let gravityVectorY = 1;
 let worldAngle = 0;
 let worldTurning = false;
-let cycleEpoch = performance.now();
-let previousTurnIndex = -1;
+let lastCycleFrame = performance.now();
+let rotationSpeed = 1;
+let targetRotationSpeed = 1;
+let wheelFlashTimer = 0;
 let bodies = [];
 let links = [];
 let sparks = [];
@@ -48,6 +54,9 @@ let random = Math.random;
 let currentSeed = getInitialSeed();
 let audioContext = null;
 let soundEnabled = localStorage.getItem("baam-games-sound") !== "off";
+let isPaused = false;
+let pausedAt = 0;
+let accumulatedPause = 0;
 
 function getInitialSeed() {
   const fromUrl = Number(new URLSearchParams(location.search).get("seed"));
@@ -74,36 +83,26 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function smoothStep(value) {
-  const t = clamp(value, 0, 1);
-  return t * t * (3 - 2 * t);
-}
-
 function updateWorldCycle(time) {
   if (reducedMotion) {
     worldAngle = 0;
     worldTurning = false;
+    lastCycleFrame = time;
   } else {
-    const holdDuration = 8500;
-    const turnDuration = 9000;
-    const segmentDuration = holdDuration + turnDuration;
-    const elapsed = Math.max(0, time - cycleEpoch);
-    const turnIndex = Math.floor(elapsed / segmentDuration);
-    const localTime = elapsed % segmentDuration;
-    const turningNow = localTime >= holdDuration;
-    const progress = turningNow ? smoothStep((localTime - holdDuration) / turnDuration) : 0;
-    worldAngle = ((turnIndex % 4) + progress) * Math.PI / 2;
-    if (turningNow && (!worldTurning || turnIndex !== previousTurnIndex)) {
-      for (const body of bodies) wake(body);
-    }
-    worldTurning = turningNow;
-    previousTurnIndex = turnIndex;
+    const rotationDuration = 96000;
+    const elapsed = clamp(time - lastCycleFrame, 0, 64);
+    lastCycleFrame = time;
+    const easing = 1 - Math.exp(-elapsed / 220);
+    rotationSpeed += (targetRotationSpeed - rotationSpeed) * easing;
+    worldAngle = (worldAngle + elapsed / rotationDuration * Math.PI * 2 * rotationSpeed) % (Math.PI * 2);
+    worldTurning = rotationSpeed > 0.01;
   }
 
+  // The frame rotates, not gravity. Transforming this local vector through the
+  // frame rotation always produces the same screen vector: straight down.
   gravityVectorX = Math.sin(worldAngle);
   gravityVectorY = Math.cos(worldAngle);
-  stageGrid.style.transform = `rotate(${-worldAngle}rad) scale(1.55)`;
-  dropMarker.style.setProperty("--gravity-angle", `${-worldAngle}rad`);
+  worldLayer.style.transform = `translate(-50%, -50%) rotate(${worldAngle}rad)`;
 }
 
 function cardSize(index, open = false) {
@@ -168,6 +167,7 @@ function createBody(item, index) {
     item,
     index,
     node,
+    interfaceNode: node.querySelector(".card-interface"),
     canvas: node.querySelector(".card-sim"),
     context: node.querySelector(".card-sim").getContext("2d"),
     x: arenaWidth * (0.2 + index * 0.19),
@@ -331,8 +331,15 @@ function bindCard(body) {
 }
 
 function arenaPoint(event) {
-  const rect = arena.getBoundingClientRect();
-  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  const rect = worldLayer.getBoundingClientRect();
+  const dx = event.clientX - (rect.left + rect.width / 2);
+  const dy = event.clientY - (rect.top + rect.height / 2);
+  const cosine = Math.cos(worldAngle);
+  const sine = Math.sin(worldAngle);
+  return {
+    x: arenaWidth / 2 + cosine * dx + sine * dy,
+    y: arenaHeight / 2 - sine * dx + cosine * dy
+  };
 }
 
 function toggleCard(body, force) {
@@ -367,7 +374,7 @@ function solveBounds(body) {
   const left = 10 + extents.x;
   const right = arenaWidth - 10 - extents.x;
   const top = 5 + extents.y;
-  const bottom = arenaHeight - 44 - extents.y;
+  const bottom = arenaHeight - 10 - extents.y;
   const bounce = (speed, supporting) => {
     if (speed < 90) return 0;
     if (supporting) return speed > 420 ? 0.19 : speed > 180 ? 0.1 : 0.03;
@@ -561,8 +568,11 @@ function updatePhysics(dt, time) {
       updateMass(body);
       if (!body.dragging && !body.sleeping) {
         const gravityForce = 1180 * gravityLevels[gravityLevel];
-        body.vx += (gravityVectorX * gravityForce + pointerGravity) * step;
-        body.vy += gravityVectorY * gravityForce * step;
+        // Mouse influence also remains screen-horizontal while the frame turns.
+        const pointerX = Math.cos(worldAngle) * pointerGravity;
+        const pointerY = -Math.sin(worldAngle) * pointerGravity;
+        body.vx += (gravityVectorX * gravityForce + pointerX) * step;
+        body.vy += (gravityVectorY * gravityForce + pointerY) * step;
         const ballastStrength = body.open ? 9.5 : 6.8;
         const ballastError = Math.atan2(Math.sin(body.angle), Math.cos(body.angle));
         body.av += -ballastError * ballastStrength * step;
@@ -615,10 +625,16 @@ function updatePhysics(dt, time) {
 }
 
 function renderBodies(time) {
+  const interfaceQuarter = Math.round(worldAngle / (Math.PI / 2));
+  const interfaceAngle = -interfaceQuarter * Math.PI / 2;
+  const interfaceIsVertical = Math.abs(interfaceQuarter) % 2 === 1;
   for (const body of bodies) {
     body.node.style.width = `${body.w}px`;
     body.node.style.height = `${body.h}px`;
     body.node.style.transform = `translate3d(${body.x - body.w / 2}px, ${body.y - body.h / 2}px, 0) rotate(${body.angle}rad)`;
+    body.interfaceNode.style.width = `${interfaceIsVertical ? body.h : body.w}px`;
+    body.interfaceNode.style.height = `${interfaceIsVertical ? body.w : body.h}px`;
+    body.interfaceNode.style.setProperty("--interface-angle", `${interfaceAngle}rad`);
     drawCardSimulation(body, time);
   }
 }
@@ -761,10 +777,10 @@ function drawArena(dt) {
   arenaContext.setTransform(ratio, 0, 0, ratio, 0, 0);
   arenaContext.clearRect(0, 0, arenaWidth, arenaHeight);
   const boundaryGlow = [
-    { alpha: Math.max(0, gravityVectorY), x1: 10, y1: arenaHeight - 44, x2: arenaWidth - 10, y2: arenaHeight - 44 },
-    { alpha: Math.max(0, gravityVectorX), x1: arenaWidth - 10, y1: 5, x2: arenaWidth - 10, y2: arenaHeight - 44 },
+    { alpha: Math.max(0, gravityVectorY), x1: 10, y1: arenaHeight - 10, x2: arenaWidth - 10, y2: arenaHeight - 10 },
+    { alpha: Math.max(0, gravityVectorX), x1: arenaWidth - 10, y1: 5, x2: arenaWidth - 10, y2: arenaHeight - 10 },
     { alpha: Math.max(0, -gravityVectorY), x1: 10, y1: 5, x2: arenaWidth - 10, y2: 5 },
-    { alpha: Math.max(0, -gravityVectorX), x1: 10, y1: 5, x2: 10, y2: arenaHeight - 44 }
+    { alpha: Math.max(0, -gravityVectorX), x1: 10, y1: 5, x2: 10, y2: arenaHeight - 10 }
   ];
   arenaContext.save();
   arenaContext.lineCap = "square";
@@ -810,11 +826,14 @@ function drawArena(dt) {
 }
 
 function frame(time) {
-  const dt = Math.min(0.045, (time - lastFrame) / 1000 || 0.016);
+  const dt = isPaused ? 0 : Math.min(0.045, (time - lastFrame) / 1000 || 0.016);
   lastFrame = time;
-  updateWorldCycle(time);
-  if (!reducedMotion) updatePhysics(dt, time);
-  renderBodies(time);
+  if (!isPaused) {
+    updateWorldCycle(time);
+    if (!reducedMotion) updatePhysics(dt, time);
+  }
+  const visualTime = (isPaused ? pausedAt : time) - accumulatedPause;
+  renderBodies(visualTime);
   drawArena(dt);
   requestAnimationFrame(frame);
 }
@@ -828,12 +847,14 @@ function reset(seed = currentSeed) {
   history.replaceState(null, "", url);
   links = [];
   sparks = [];
-  cycleEpoch = performance.now();
-  previousTurnIndex = -1;
+  lastCycleFrame = performance.now();
   worldAngle = 0;
   worldTurning = false;
   gravityVectorX = 0;
   gravityVectorY = 1;
+  worldLayer.style.transform = "translate(-50%, -50%) rotate(0rad)";
+  accumulatedPause = 0;
+  if (isPaused) pausedAt = lastCycleFrame;
   bodies.forEach((body, index) => {
     const size = cardSize(index, body.open);
     body.w = size.width;
@@ -872,9 +893,8 @@ function layoutReduced() {
 }
 
 function resize() {
-  const bounds = arena.getBoundingClientRect();
-  arenaWidth = bounds.width;
-  arenaHeight = bounds.height;
+  arenaWidth = worldLayer.clientWidth;
+  arenaHeight = worldLayer.clientHeight;
   for (const body of bodies) {
     const size = cardSize(body.index, body.open);
     body.targetW = size.width;
@@ -896,13 +916,36 @@ arena.addEventListener("pointerleave", () => {
 
 gravityControl.addEventListener("click", () => {
   gravityLevel = (gravityLevel + 1) % gravityLevels.length;
-  gravityValue.textContent = gravityLevels[gravityLevel].toFixed(2).replace(/0$/, "");
+  gravityValue.textContent = `×${gravityLevels[gravityLevel].toFixed(2).replace(/0$/, "")}`;
   for (const body of bodies) {
     wake(body);
     body.vx -= gravityVectorX * 75;
     body.vy -= gravityVectorY * 75;
   }
 });
+
+function renderSpeedMeter() {
+  const normalized = (targetRotationSpeed - 0.1) / 4.9;
+  speedValue.textContent = `×${targetRotationSpeed.toFixed(2)}`;
+  speedFill.style.transform = `scaleX(${clamp(normalized, 0, 1)})`;
+  speedMeter.setAttribute("aria-label", `Vitesse de rotation : fois ${targetRotationSpeed.toFixed(2)}`);
+}
+
+function nudgeRotationSpeed(deltaY) {
+  if (!Number.isFinite(deltaY) || deltaY === 0 || reducedMotion) return;
+  const impulse = Math.sign(deltaY) * Math.min(0.5, Math.max(0.05, Math.abs(deltaY) * 0.0025));
+  targetRotationSpeed = Math.round(clamp(targetRotationSpeed + impulse, 0.1, 5) * 100) / 100;
+  renderSpeedMeter();
+  speedMeter.classList.add("is-changing");
+  window.clearTimeout(wheelFlashTimer);
+  wheelFlashTimer = window.setTimeout(() => speedMeter.classList.remove("is-changing"), 320);
+}
+
+window.addEventListener("wheel", (event) => {
+  if (event.ctrlKey) return;
+  event.preventDefault();
+  nudgeRotationSpeed(event.deltaY);
+}, { passive: false });
 
 function renderSoundControl() {
   soundControl.setAttribute("aria-pressed", String(soundEnabled));
@@ -917,6 +960,27 @@ soundControl.addEventListener("click", () => {
   if (soundEnabled) playCardSound(true);
 });
 
+function renderMotionControl() {
+  motionControl.setAttribute("aria-pressed", String(isPaused));
+  motionControl.setAttribute("aria-label", isPaused ? "Relancer le jeu" : "Mettre le jeu en pause");
+  motionLabel.textContent = isPaused ? "PLAY" : "PAUSE";
+  motionValue.textContent = isPaused ? "▶" : "Ⅱ";
+}
+
+motionControl.addEventListener("click", () => {
+  const now = performance.now();
+  if (isPaused) {
+    accumulatedPause += now - pausedAt;
+    lastCycleFrame = now;
+    lastFrame = now;
+    isPaused = false;
+  } else {
+    pausedAt = now;
+    isPaused = true;
+  }
+  renderMotionControl();
+});
+
 seedControl.addEventListener("click", () => {
   const values = new Uint32Array(1);
   crypto.getRandomValues(values);
@@ -925,6 +989,8 @@ seedControl.addEventListener("click", () => {
 
 window.addEventListener("resize", resize);
 renderSoundControl();
+renderMotionControl();
+renderSpeedMeter();
 
 async function boot() {
   resize();
@@ -934,7 +1000,6 @@ async function boot() {
     const registry = await response.json();
     random = mulberry32(currentSeed);
     bodies = registry.assets.map(createBody);
-    gameCounter.textContent = `${String(bodies.length).padStart(2, "0")} OBJETS JOUABLES`;
     buildStatus.textContent = `REGISTRE VIVANT · ${bodies.length} SOURCES`;
     reset(currentSeed);
     requestAnimationFrame(frame);

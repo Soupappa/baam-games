@@ -11,6 +11,8 @@ const soundControl = document.querySelector("#sound-control");
 const soundValue = document.querySelector("#sound-value");
 const buildStatus = document.querySelector("#build-status");
 const gameCounter = document.querySelector("#game-counter");
+const stageGrid = document.querySelector(".stage-grid");
+const dropMarker = document.querySelector(".drop-marker");
 
 const typeLabels = {
   "game": "Jeu numérique",
@@ -29,6 +31,12 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const gravityLevels = [0.65, 1, 1.4];
 let gravityLevel = 1;
 let pointerGravity = 0;
+let gravityVectorX = 0;
+let gravityVectorY = 1;
+let worldAngle = 0;
+let worldTurning = false;
+let cycleEpoch = performance.now();
+let previousTurnIndex = -1;
 let bodies = [];
 let links = [];
 let sparks = [];
@@ -64,6 +72,38 @@ function rand(min, max) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function smoothStep(value) {
+  const t = clamp(value, 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function updateWorldCycle(time) {
+  if (reducedMotion) {
+    worldAngle = 0;
+    worldTurning = false;
+  } else {
+    const holdDuration = 8500;
+    const turnDuration = 9000;
+    const segmentDuration = holdDuration + turnDuration;
+    const elapsed = Math.max(0, time - cycleEpoch);
+    const turnIndex = Math.floor(elapsed / segmentDuration);
+    const localTime = elapsed % segmentDuration;
+    const turningNow = localTime >= holdDuration;
+    const progress = turningNow ? smoothStep((localTime - holdDuration) / turnDuration) : 0;
+    worldAngle = ((turnIndex % 4) + progress) * Math.PI / 2;
+    if (turningNow && (!worldTurning || turnIndex !== previousTurnIndex)) {
+      for (const body of bodies) wake(body);
+    }
+    worldTurning = turningNow;
+    previousTurnIndex = turnIndex;
+  }
+
+  gravityVectorX = Math.sin(worldAngle);
+  gravityVectorY = Math.cos(worldAngle);
+  stageGrid.style.transform = `rotate(${-worldAngle}rad) scale(1.55)`;
+  dropMarker.style.setProperty("--gravity-angle", `${-worldAngle}rad`);
 }
 
 function cardSize(index, open = false) {
@@ -326,35 +366,75 @@ function solveBounds(body) {
   const extents = rotatedExtents(body);
   const left = 10 + extents.x;
   const right = arenaWidth - 10 - extents.x;
-  const ceiling = 5 + extents.y;
-  const floor = arenaHeight - 44 - extents.y;
-  const wallRestitution = 0.16;
+  const top = 5 + extents.y;
+  const bottom = arenaHeight - 44 - extents.y;
+  const bounce = (speed, supporting) => {
+    if (speed < 90) return 0;
+    if (supporting) return speed > 420 ? 0.19 : speed > 180 ? 0.1 : 0.03;
+    return speed > 320 ? 0.16 : 0.08;
+  };
 
   if (body.x < left) {
+    const speed = Math.max(0, -body.vx);
+    const supporting = gravityVectorX < -0.36;
     body.x = left;
-    if (body.vx < 0) body.vx *= -wallRestitution;
+    if (body.vx < 0) body.vx = speed * bounce(speed, supporting);
+    if (supporting) {
+      body.supported = true;
+      body.vy *= 0.82;
+      body.av *= 0.52;
+    } else {
+      body.vy *= 0.96;
+      body.av *= 0.74;
+    }
     body.av += Math.abs(body.vy) * 0.00005;
-    impact(body.x - extents.x, body.y, body, Math.abs(body.vx));
+    impact(body.x - extents.x, body.y, body, speed);
   } else if (body.x > right) {
+    const speed = Math.max(0, body.vx);
+    const supporting = gravityVectorX > 0.36;
     body.x = right;
-    if (body.vx > 0) body.vx *= -wallRestitution;
+    if (body.vx > 0) body.vx = -speed * bounce(speed, supporting);
+    if (supporting) {
+      body.supported = true;
+      body.vy *= 0.82;
+      body.av *= 0.52;
+    } else {
+      body.vy *= 0.96;
+      body.av *= 0.74;
+    }
     body.av -= Math.abs(body.vy) * 0.00005;
-    impact(body.x + extents.x, body.y, body, Math.abs(body.vx));
+    impact(body.x + extents.x, body.y, body, speed);
   }
 
-  if (body.y > floor) {
-    const speed = Math.abs(body.vy);
-    const floorRestitution = speed > 420 ? 0.19 : speed > 180 ? 0.11 : 0;
-    body.y = floor;
-    body.supported = true;
-    if (body.vy > 0) body.vy *= -floorRestitution;
-    body.vx *= 0.82;
-    body.av *= 0.52;
+  if (body.y > bottom) {
+    const speed = Math.max(0, body.vy);
+    const supporting = gravityVectorY > 0.36;
+    body.y = bottom;
+    if (body.vy > 0) body.vy = -speed * bounce(speed, supporting);
+    if (supporting) {
+      body.supported = true;
+      body.vx *= 0.82;
+      body.av *= 0.52;
+    } else {
+      body.vx *= 0.96;
+      body.av *= 0.74;
+    }
     impact(body.x, body.y + extents.y, body, speed);
   }
-  if (body.entered && body.y < ceiling) {
-    body.y = ceiling;
-    if (body.vy < 0) body.vy *= -0.18;
+  if (body.entered && body.y < top) {
+    const speed = Math.max(0, -body.vy);
+    const supporting = gravityVectorY < -0.36;
+    body.y = top;
+    if (body.vy < 0) body.vy = speed * bounce(speed, supporting);
+    if (supporting) {
+      body.supported = true;
+      body.vx *= 0.82;
+      body.av *= 0.52;
+    } else {
+      body.vx *= 0.96;
+      body.av *= 0.74;
+    }
+    impact(body.x, body.y - extents.y, body, speed);
   }
 }
 
@@ -380,8 +460,9 @@ function solvePair(a, b) {
     overlap = overlapX;
   }
 
-  if (ny > 0) a.supported = true;
-  if (ny < 0) b.supported = true;
+  const normalAlongGravity = nx * gravityVectorX + ny * gravityVectorY;
+  if (normalAlongGravity > 0.48) a.supported = true;
+  if (normalAlongGravity < -0.48) b.supported = true;
 
   const relative = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
   if (Math.abs(relative) > 90) {
@@ -479,8 +560,9 @@ function updatePhysics(dt, time) {
       body.h += (body.targetH - body.h) * Math.min(1, step * 10);
       updateMass(body);
       if (!body.dragging && !body.sleeping) {
-        body.vx += pointerGravity * step;
-        body.vy += 1180 * gravityLevels[gravityLevel] * step;
+        const gravityForce = 1180 * gravityLevels[gravityLevel];
+        body.vx += (gravityVectorX * gravityForce + pointerGravity) * step;
+        body.vy += gravityVectorY * gravityForce * step;
         const ballastStrength = body.open ? 9.5 : 6.8;
         const ballastError = Math.atan2(Math.sin(body.angle), Math.cos(body.angle));
         body.av += -ballastError * ballastStrength * step;
@@ -510,7 +592,7 @@ function updatePhysics(dt, time) {
     if (body.dragging || body.sleeping) continue;
     const speed = Math.hypot(body.vx, body.vy);
     const uprightError = Math.abs(Math.atan2(Math.sin(body.angle), Math.cos(body.angle)));
-    const settled = body.supported && speed < 16 && Math.abs(body.av) < 0.07 && uprightError < 0.045;
+    const settled = !worldTurning && body.supported && speed < 16 && Math.abs(body.av) < 0.07 && uprightError < 0.045;
     if (settled) {
       body.restTime += dt;
       body.vx *= 0.72;
@@ -678,6 +760,27 @@ function drawArena(dt) {
   }
   arenaContext.setTransform(ratio, 0, 0, ratio, 0, 0);
   arenaContext.clearRect(0, 0, arenaWidth, arenaHeight);
+  const boundaryGlow = [
+    { alpha: Math.max(0, gravityVectorY), x1: 10, y1: arenaHeight - 44, x2: arenaWidth - 10, y2: arenaHeight - 44 },
+    { alpha: Math.max(0, gravityVectorX), x1: arenaWidth - 10, y1: 5, x2: arenaWidth - 10, y2: arenaHeight - 44 },
+    { alpha: Math.max(0, -gravityVectorY), x1: 10, y1: 5, x2: arenaWidth - 10, y2: 5 },
+    { alpha: Math.max(0, -gravityVectorX), x1: 10, y1: 5, x2: 10, y2: arenaHeight - 44 }
+  ];
+  arenaContext.save();
+  arenaContext.lineCap = "square";
+  for (const boundary of boundaryGlow) {
+    if (boundary.alpha < 0.015) continue;
+    arenaContext.globalAlpha = 0.24 + boundary.alpha * 0.7;
+    arenaContext.strokeStyle = boundary.alpha > 0.72 ? "#dfff00" : "#ff5038";
+    arenaContext.lineWidth = 1.5 + boundary.alpha * 3;
+    arenaContext.shadowColor = arenaContext.strokeStyle;
+    arenaContext.shadowBlur = 7 + boundary.alpha * 9;
+    arenaContext.beginPath();
+    arenaContext.moveTo(boundary.x1, boundary.y1);
+    arenaContext.lineTo(boundary.x2, boundary.y2);
+    arenaContext.stroke();
+  }
+  arenaContext.restore();
   arenaContext.save();
   arenaContext.setLineDash([3, 6]);
   for (const link of links) {
@@ -709,6 +812,7 @@ function drawArena(dt) {
 function frame(time) {
   const dt = Math.min(0.045, (time - lastFrame) / 1000 || 0.016);
   lastFrame = time;
+  updateWorldCycle(time);
   if (!reducedMotion) updatePhysics(dt, time);
   renderBodies(time);
   drawArena(dt);
@@ -724,6 +828,12 @@ function reset(seed = currentSeed) {
   history.replaceState(null, "", url);
   links = [];
   sparks = [];
+  cycleEpoch = performance.now();
+  previousTurnIndex = -1;
+  worldAngle = 0;
+  worldTurning = false;
+  gravityVectorX = 0;
+  gravityVectorY = 1;
   bodies.forEach((body, index) => {
     const size = cardSize(index, body.open);
     body.w = size.width;
@@ -787,7 +897,11 @@ arena.addEventListener("pointerleave", () => {
 gravityControl.addEventListener("click", () => {
   gravityLevel = (gravityLevel + 1) % gravityLevels.length;
   gravityValue.textContent = gravityLevels[gravityLevel].toFixed(2).replace(/0$/, "");
-  for (const body of bodies) wake(body, 75);
+  for (const body of bodies) {
+    wake(body);
+    body.vx -= gravityVectorX * 75;
+    body.vy -= gravityVectorY * 75;
+  }
 });
 
 function renderSoundControl() {

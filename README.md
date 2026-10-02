@@ -4,6 +4,8 @@ Portail territorial des jeux BAAM. L'interface est un plateau physique : les car
 tombent, se heurtent, s'accrochent et recomposent le tas lorsqu'un jeu s'ouvre.
 Leur centre de gravité les ramène face lisible, puis la simulation les met réellement
 au repos. Les sons d'ouverture et de fermeture sont synthétisés côté navigateur.
+Le monde effectue ensuite un lent quart de tour : la gravité migre d'une paroi à
+l'autre, les cartes recomposent le tas, mais le titre et les contenus restent droits.
 
 ## Lancer
 

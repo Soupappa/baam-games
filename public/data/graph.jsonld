@@ -6,11 +6,11 @@
   },
   "@graph": [
     {
-      "@id": "https://games.baam.pro/#asymmetric-wars",
+      "@id": "https://asym.games.baam.pro/",
       "@type": "SoftwareApplication",
       "name": "Asymmetric Wars",
       "description": "Une guerre en temps réel entre une coalition technologiquement supérieure et un régime lent, résilient, impossible à lire avec les mêmes règles.",
-      "dateModified": "2026-10-02",
+      "dateModified": "2026-10-03",
       "keywords": [
         "stratégie",
         "asymétrie",
@@ -23,17 +23,17 @@
       },
       "baam:relations": [
         {
-          "@id": "https://games.baam.pro/#doctrine-engine",
+          "@id": "https://doctrine.games.baam.pro/",
           "relationType": "related-to"
         }
       ]
     },
     {
-      "@id": "https://games.baam.pro/#doctrine-engine",
+      "@id": "https://doctrine.games.baam.pro/",
       "@type": "SoftwareApplication",
       "name": "Doctrine Engine",
       "description": "Deux intelligences artificielles inventent leurs unités, affrontent leurs doctrines et évoluent sous une même contrainte de budget.",
-      "dateModified": "2026-10-02",
+      "dateModified": "2026-10-03",
       "keywords": [
         "IA",
         "évolution",
@@ -46,17 +46,17 @@
       },
       "baam:relations": [
         {
-          "@id": "https://games.baam.pro/#asymmetric-wars",
+          "@id": "https://asym.games.baam.pro/",
           "relationType": "related-to"
         }
       ]
     },
     {
-      "@id": "https://games.baam.pro/#ninja-worms",
+      "@id": "https://ninja-worms.games.baam.pro/",
       "@type": "SoftwareApplication",
       "name": "Ninja Worms",
       "description": "Un worms-like nerveux : dix secondes pour viser, bondir, lancer le grappin et faire exploser un terrain qui ne se remet jamais vraiment.",
-      "dateModified": "2026-10-02",
+      "dateModified": "2026-10-03",
       "keywords": [
         "arcade",
         "grappin",
@@ -92,7 +92,7 @@
       },
       "baam:relations": [
         {
-          "@id": "https://games.baam.pro/#ninja-worms",
+          "@id": "https://ninja-worms.games.baam.pro/",
           "relationType": "related-to"
         }
       ]

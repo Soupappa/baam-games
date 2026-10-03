@@ -20,19 +20,19 @@
     {
       "id": "asymmetric-wars",
       "file": "../asymmetric-war/baam.json",
-      "url": "https://asym.games.baam.pro/.well-known/baam.json",
+      "url": "https://baam-asymmetric-wars.netlify.app/.well-known/baam.json",
       "cache": "data/manifests/asymmetric-wars.json"
     },
     {
       "id": "doctrine-engine",
       "file": "../Doctrine Engine/baam.json",
-      "url": "https://doctrine.games.baam.pro/.well-known/baam.json",
+      "url": "https://baam-doctrine-engine.netlify.app/.well-known/baam.json",
       "cache": "data/manifests/doctrine-engine.json"
     },
     {
       "id": "ninja-worms",
       "file": "../NinjaWorms/baam.json",
-      "url": "https://ninja-worms.games.baam.pro/.well-known/baam.json",
+      "url": "https://baam-ninja-worms.netlify.app/.well-known/baam.json",
       "cache": "data/manifests/ninja-worms.json"
     },
     {

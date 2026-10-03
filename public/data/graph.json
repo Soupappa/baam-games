@@ -11,9 +11,9 @@
       "territories": [
         "games"
       ],
-      "url": null,
+      "url": "https://asym.games.baam.pro/",
       "repository": "https://github.com/Soupappa/asymmetric-war",
-      "updatedAt": "2026-10-02",
+      "updatedAt": "2026-10-03",
       "tags": [
         "stratégie",
         "asymétrie",
@@ -39,9 +39,9 @@
         "games",
         "lab"
       ],
-      "url": null,
-      "repository": null,
-      "updatedAt": "2026-10-02",
+      "url": "https://doctrine.games.baam.pro/",
+      "repository": "https://github.com/Soupappa/DoctrineEngine",
+      "updatedAt": "2026-10-03",
       "tags": [
         "IA",
         "évolution",
@@ -66,9 +66,9 @@
       "territories": [
         "games"
       ],
-      "url": null,
+      "url": "https://ninja-worms.games.baam.pro/",
       "repository": "https://github.com/Soupappa/NinjaWorms",
-      "updatedAt": "2026-10-02",
+      "updatedAt": "2026-10-03",
       "tags": [
         "arcade",
         "grappin",

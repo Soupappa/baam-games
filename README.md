@@ -33,6 +33,16 @@ Une relation n'est déclarée que dans un sens. Le build valide le vocabulaire, 
 les inverses et publie `public/data/registry.json`, `graph.json`, `graph.jsonld` et le
 sitemap. Les manifestes et exports machine ne sont pas montrés dans l'interface.
 
+Les quatre jeux sont publiés en continu :
+
+- `https://asym.games.baam.pro/` ;
+- `https://doctrine.games.baam.pro/` ;
+- `https://ninja-worms.games.baam.pro/` ;
+- `https://spider-vs-ants.games.baam.pro/`.
+
+Leurs manifests sont lus depuis les origines Netlify stables afin que la compilation
+ne dépende pas du délai de propagation DNS des domaines canoniques.
+
 ## Previews vidéo
 
 Une preview de type `video` contient un poster, des dimensions, un texte alternatif

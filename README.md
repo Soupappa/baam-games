@@ -52,17 +52,22 @@ l'économie de données, la pause générale ou un onglet masqué l'exigent.
 
 ## Cascade de publication
 
-En production, une notification sortante Netlify de type HTTP POST, limitée à
-`Deploy succeeded`, appelle le build hook privé de BAAM.pro. Les jeux suivent le même
-schéma vers BAAM.Games. Déclencher la cascade après la mise en ligne évite que le
-niveau suivant ne relise l'ancienne version pendant que le déploiement courant est
-encore en cours.
+En production, les notifications `Deploy succeeded` des jeux appellent la fonction
+de regroupement `/api/queue-games-rebuild`. Chaque notification repousse une fenêtre
+de cinq minutes. Seule la dernière fonction encore active déclenche alors le build
+hook privé de Games. Plusieurs jeux publiés dans un même lot produisent donc un seul
+déploiement Games.
+
+Après le succès de Games, sa notification sortante appelle une seule fois le build
+hook privé de BAAM.pro. Les URL des hooks et le jeton du tampon sont stockés uniquement
+dans les variables Netlify `BAAM_GAMES_BUILD_HOOK` et `BAAM_BATCH_TOKEN`. La fenêtre
+peut être ajustée avec `BAAM_BATCH_WINDOW_MS` sans modifier le code.
 
 Le `postbuild` et les variables `BAAM_DOWNSTREAM_BUILD_HOOK` /
 `BAAM_DOWNSTREAM_REQUIRED` restent disponibles comme mécanisme de repli hors Netlify.
 Les URLs des hooks sont des secrets de configuration et ne sont jamais versionnées.
 
 ```text
-push jeu → déploiement jeu → hook Games → déploiement Games → hook BAAM.pro
+pushes jeux → déploiements jeux → tampon 5 min → un Games → un BAAM.pro
 ```
 

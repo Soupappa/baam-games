@@ -7,8 +7,10 @@
     "build": "node scripts/build-portal.js",
     "postbuild": "node scripts/trigger-downstream.js",
     "check": "node scripts/build-portal.js --check",
-    "test": "node scripts/test-manifest-contract.js && node scripts/test-downstream-hook.js",
+    "test": "node scripts/test-manifest-contract.js && node scripts/test-downstream-hook.js && node scripts/test-batch-cascade.js",
     "serve": "node server.js"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.3"
   }
 }
-

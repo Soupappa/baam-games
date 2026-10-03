@@ -38,7 +38,7 @@
     {
       "id": "spider-vs-ants",
       "file": "../SpiderVsAnts/baam.json",
-      "url": "https://spider-vs-ants.games.baam.pro/.well-known/baam.json",
+      "url": "https://baam-spider-vs-ants.netlify.app/.well-known/baam.json",
       "cache": "data/manifests/spider-vs-ants.json"
     }
   ]

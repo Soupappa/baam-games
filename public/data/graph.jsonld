@@ -69,17 +69,17 @@
       },
       "baam:relations": [
         {
-          "@id": "https://games.baam.pro/#spider-vs-ants",
+          "@id": "https://spider-vs-ants.games.baam.pro/",
           "relationType": "related-to"
         }
       ]
     },
     {
-      "@id": "https://games.baam.pro/#spider-vs-ants",
+      "@id": "https://spider-vs-ants.games.baam.pro/",
       "@type": "Game",
       "name": "Spider vs Ants",
       "description": "Un jeu de plateau familial où dix espèces d'insectes se disputent le terrain, les ressources et le droit de ne pas finir dans la toile.",
-      "dateModified": "2026-10-02",
+      "dateModified": "2026-10-03",
       "keywords": [
         "plateau",
         "insectes",

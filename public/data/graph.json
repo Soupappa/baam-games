@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "builtAt": "2026-10-02T00:00:00.000Z",
+  "builtAt": "2026-10-03T00:00:00.000Z",
   "nodes": [
     {
       "id": "asymmetric-wars",
@@ -93,9 +93,9 @@
       "territories": [
         "games"
       ],
-      "url": null,
+      "url": "https://spider-vs-ants.games.baam.pro/",
       "repository": "https://github.com/Soupappa/SpiderVsAnts",
-      "updatedAt": "2026-10-02",
+      "updatedAt": "2026-10-03",
       "tags": [
         "plateau",
         "insectes",

@@ -2,8 +2,8 @@
   "meta": {
     "schemaVersion": 1,
     "territory": "games",
-    "sourceHash": "881f56c083b685095eec86ea7517089d4dd8f54eeebd689b0e027fd81fe2b370",
-    "compiledAt": "2026-10-02",
+    "sourceHash": "b2d0af4c08237ab436a4450e58c86a674bc83cf2c8d6cc47cd3d565cf6bff729",
+    "compiledAt": "2026-10-03",
     "count": 4,
     "relationVocabulary": [
       "uses",
@@ -146,9 +146,9 @@
       "territories": [
         "games"
       ],
-      "url": null,
+      "url": "https://spider-vs-ants.games.baam.pro/",
       "repository": "https://github.com/Soupappa/SpiderVsAnts",
-      "updatedAt": "2026-10-02",
+      "updatedAt": "2026-10-03",
       "tags": [
         "plateau",
         "insectes",

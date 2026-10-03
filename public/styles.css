@@ -395,6 +395,25 @@ button { color: inherit; }
 .game-card:focus-visible { outline: 4px solid var(--accent); outline-offset: 3px; }
 .game-card.is-open { border-width: 6px; cursor: grab; }
 
+.card-preview {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+.card-preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-card.has-video-preview .card-preview { opacity: 0.3; }
+.game-card.has-video-preview.is-open .card-preview { opacity: 0.78; }
+.game-card.has-video-preview.is-open .card-sim { opacity: 0.18; }
+
 .card-sim {
   position: absolute;
   inset: 0;
@@ -607,4 +626,5 @@ button { color: inherit; }
   html { scroll-behavior: auto; }
   .arena { touch-action: auto; }
   .game-card { transition: none; }
+  .card-preview { transition: none; }
 }

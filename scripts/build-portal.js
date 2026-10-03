@@ -2,45 +2,13 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { relationVocabulary, validateManifest } from "./manifest-contract.js";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, "..");
 const publicDir = join(root, "public");
 const config = JSON.parse(await readFile(join(root, "portal.config.json"), "utf8"));
 const checkOnly = process.argv.includes("--check");
-
-const relationVocabulary = {
-  "uses": "used-by",
-  "used-by": "uses",
-  "inspired-by": "inspires",
-  "inspires": "inspired-by",
-  "derived-from": "has-derivative",
-  "has-derivative": "derived-from",
-  "part-of": "has-part",
-  "has-part": "part-of",
-  "related-to": "related-to"
-};
-
-function validate(manifest, expectedId) {
-  const errors = [];
-  const required = ["schemaVersion", "id", "title", "summary", "type", "status", "territories", "updatedAt"];
-  for (const field of required) {
-    if (manifest[field] === undefined || manifest[field] === null || manifest[field] === "") {
-      errors.push(`champ requis absent : ${field}`);
-    }
-  }
-  if (manifest.id !== expectedId) errors.push(`id ${manifest.id} différent de ${expectedId}`);
-  if (!Array.isArray(manifest.territories) || !manifest.territories.includes("games")) {
-    errors.push("territories doit contenir games");
-  }
-  if (!Array.isArray(manifest.tags)) errors.push("tags doit être un tableau");
-  if (!Array.isArray(manifest.relations)) errors.push("relations doit être un tableau");
-  for (const relation of manifest.relations || []) {
-    if (!relationVocabulary[relation.type]) errors.push(`relation inconnue : ${relation.type}`);
-    if (!relation.target) errors.push("une relation n'a pas de cible");
-  }
-  if (errors.length) throw new Error(`${expectedId} : ${errors.join(" ; ")}`);
-}
 
 async function fromFile(path) {
   const absolute = isAbsolute(path) ? path : resolve(root, path);
@@ -68,7 +36,7 @@ async function loadSource(source) {
   for (const [origin, load] of attempts) {
     try {
       const manifest = await load();
-      validate(manifest, source.id);
+      validateManifest(manifest, source.id);
       return { manifest, origin: origin === "local" ? "file" : origin };
     } catch (error) {
       console.warn(`[${source.id}] ${origin} indisponible : ${error.message}`);

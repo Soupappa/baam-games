@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-portal.js",
+    "postbuild": "node scripts/trigger-downstream.js",
     "check": "node scripts/build-portal.js --check",
+    "test": "node scripts/test-manifest-contract.js && node scripts/test-downstream-hook.js",
     "serve": "node server.js"
   }
 }

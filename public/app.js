@@ -32,6 +32,7 @@ const statusLabels = {
 };
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const saveData = Boolean(navigator.connection?.saveData);
 const gravityLevels = [0.2, 0.65, 1, 1.8, 3.2];
 let gravityLevel = 2;
 let pointerGravity = 0;
@@ -57,6 +58,7 @@ let soundEnabled = localStorage.getItem("baam-games-sound") !== "off";
 let isPaused = false;
 let pausedAt = 0;
 let accumulatedPause = 0;
+const bodyByNode = new WeakMap();
 
 function getInitialSeed() {
   const fromUrl = Number(new URLSearchParams(location.search).get("seed"));
@@ -136,6 +138,61 @@ function createLink(item, label, disabled = false) {
   return anchor;
 }
 
+function createVideoPreview(item, node) {
+  if (item.preview?.type !== "video") return null;
+  const container = node.querySelector(".card-preview");
+  const video = document.createElement("video");
+  video.className = "card-preview-video";
+  video.poster = item.preview.poster;
+  video.muted = true;
+  video.autoplay = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = "none";
+  video.setAttribute("muted", "");
+  video.setAttribute("playsinline", "");
+  video.setAttribute("role", "img");
+  video.setAttribute("aria-label", item.preview.alt);
+  if (!reducedMotion && !saveData) {
+    for (const media of item.preview.sources || []) {
+      const source = document.createElement("source");
+      source.src = media.url;
+      source.type = media.type;
+      video.append(source);
+    }
+  }
+  container.append(video);
+  node.classList.add("has-video-preview");
+  return video;
+}
+
+function syncPreviewPlayback(body) {
+  if (!body.video) return;
+  const shouldPlay = body.open
+    && body.inViewport
+    && !reducedMotion
+    && !saveData
+    && !isPaused
+    && document.visibilityState === "visible";
+  if (!shouldPlay) {
+    body.video.pause();
+    return;
+  }
+  const playback = body.video.play();
+  if (playback) playback.catch(() => {});
+}
+
+const previewObserver = "IntersectionObserver" in window
+  ? new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const body = bodyByNode.get(entry.target);
+        if (!body) continue;
+        body.inViewport = entry.isIntersecting && entry.intersectionRatio >= 0.2;
+        syncPreviewPlayback(body);
+      }
+    }, { threshold: [0, 0.2, 0.6] })
+  : null;
+
 function createBody(item, index) {
   const node = template.content.firstElementChild.cloneNode(true);
   const accent = item.presentation?.accent || "#dfff00";
@@ -188,11 +245,16 @@ function createBody(item, index) {
     restTime: 0,
     entered: false,
     visualSeed: Math.floor(random() * 100000),
-    lastImpact: 0
+    lastImpact: 0,
+    video: createVideoPreview(item, node),
+    inViewport: previewObserver == null
   };
+  bodyByNode.set(node, body);
   updateMass(body);
   bindCard(body);
   layer.append(node);
+  previewObserver?.observe(node);
+  syncPreviewPlayback(body);
   return body;
 }
 
@@ -357,6 +419,7 @@ function toggleCard(body, force) {
   body.av += rand(-0.32, 0.32);
   wake(body);
   links = links.filter((link) => link.a !== body && link.b !== body);
+  syncPreviewPlayback(body);
   if (reducedMotion) layoutReduced();
 }
 
@@ -979,7 +1042,10 @@ motionControl.addEventListener("click", () => {
     isPaused = true;
   }
   renderMotionControl();
+  bodies.forEach(syncPreviewPlayback);
 });
+
+document.addEventListener("visibilitychange", () => bodies.forEach(syncPreviewPlayback));
 
 seedControl.addEventListener("click", () => {
   const values = new Uint32Array(1);

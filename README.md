@@ -42,12 +42,15 @@ l'économie de données, la pause générale ou un onglet masqué l'exigent.
 
 ## Cascade de publication
 
-Après un build réussi, `postbuild` appelle le build hook défini dans
-`BAAM_DOWNSTREAM_BUILD_HOOK`. Sur Netlify, cette variable pointera vers le hook de
-BAAM.pro. `BAAM_DOWNSTREAM_REQUIRED=true` rend cet appel bloquant si l'on veut qu'un
-échec de propagation empêche la publication territoriale.
+En production, une notification sortante Netlify de type HTTP POST, limitée à
+`Deploy succeeded`, appelle le build hook privé de BAAM.pro. Les jeux suivent le même
+schéma vers BAAM.Games. Déclencher la cascade après la mise en ligne évite que le
+niveau suivant ne relise l'ancienne version pendant que le déploiement courant est
+encore en cours.
 
-Le même mécanisme sera ajouté aux quatre jeux avec le hook de BAAM.Games :
+Le `postbuild` et les variables `BAAM_DOWNSTREAM_BUILD_HOOK` /
+`BAAM_DOWNSTREAM_REQUIRED` restent disponibles comme mécanisme de repli hors Netlify.
+Les URLs des hooks sont des secrets de configuration et ne sont jamais versionnées.
 
 ```text
 push jeu → déploiement jeu → hook Games → déploiement Games → hook BAAM.pro
